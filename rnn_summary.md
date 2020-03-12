@@ -12,7 +12,7 @@
 - the ordering of the lattice sites (qubits) is the sequence. in GHZ state, the sequence is arbitrary. in 2d, it is a 1d path filling the 2d lattice.
 - what is a GRU unit?
   - we have update gates z_i, and reset gates r_i. we calculate these from the value of h_(i-1):
-    - z_i = sigmoid(W_z[h_(i-1), a_i])$$
+    - z_i = sigmoid(W_z[h_(i-1), a_i])
     - r_i = sigmoid(W_r[h_(i-1), a_i])
   - then calculate a "candidate hidden state" h'_i using these:
     - h'_i = tanh(W_c[r_i * h _(i-1), a_i])
@@ -31,5 +31,13 @@
       - decoder='TimeDistributed_mol' during training, input of the decoder is concatenating [z,symbol_t]; during
         generation input should be [z,predicted_symbol_t] where predicted molecule is a sample of the probability
         vector (or a greedy sample where we convert predicted_molecule_t to one hot vector of the most likely symbol)
-      *still confused about this*
-  -
+      - **still confused about this**
+  - if we set decoder='TimeDistributed'
+    - create a hidden layer 'zt'
+    - use tf.tile to replicate this  layer N times (where N is the batch size), call the result z
+    - create a fully connected layer applied to z then stack it n times (for n qubits)
+    - define h1 = this stack
+    - define the stack of three GRU cells using tf.contrib.rnn.MultiRNNCell
+    - apply this to the input
+    - apply a fully-connected layer with softmax on each output
+  - if we set decoder='TimeDistributed_mol'
