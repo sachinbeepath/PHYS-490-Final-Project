@@ -11,7 +11,7 @@ def onehot_encode(l, K, q):
     onehot = np.zeros(K*q)
     for i in l:
         index = np.where(l == i)[0][0]
-        onehot[int(i)-1 + index*K] = 1
+        onehot[int(i) + index*K] = 1
     return onehot
 
 class RNN_Class(nn.Module):
