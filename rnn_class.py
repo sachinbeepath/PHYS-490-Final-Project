@@ -14,10 +14,8 @@ def onehot_encode(l, K, q):
         onehot[int(i)-1 + index*K] = 1
     return onehot
 
-
-
 class RNN_Class(nn.Module):
-    def __init__(self, data_path = data, K = 3, num_qubits = 2, latent_size = 100, batch_size = 50):
+    def __init__(self, data_path = data, K = 3, num_qubits = 2, latent_size = 100, batch_size = 20):
         super(RNN_Class, self).__init__()
         self.charset_length = K
         self.num_qubits = num_qubits
@@ -57,7 +55,7 @@ class RNN_Class(nn.Module):
         output = self.output_layers(gru_output)
         return output, state
 
-rnn = RNN_Class(data, K = 3, num_qubits = 2, latent_size = 100, batch_size = 50)
+rnn = RNN_Class(data, K = 4, num_qubits = 2, latent_size = 100, batch_size = 20)
 
 output, h = rnn.generation_time_distributed(rnn.training_data)
 
