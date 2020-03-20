@@ -17,14 +17,15 @@ def onehot_encode(l, K):
     onehot = []
     for i in l:
         onehot_encoded = np.zeros(K)
-        index = np.where(l == i)[0][0]
+        index = np.where(l == i)[0]#[0]
         onehot_encoded[int(i)] = 1
-        onehot.append(onehot_encoded)
+        onehot.append(onehot_encoded.tolist())
     return onehot
 
 def build_training_set(data_path, batch_size, K):
     dataset = np.loadtxt(data_path)[0:100] # limit to 100 for testing
     dataset_onehot = [onehot_encode(datapoint, K) for datapoint in dataset]
+    print(dataset[0], onehot_encode(dataset[0], K))
     train_set = [dataset_onehot[i:i + batch_size] for i in range(0, len(dataset_onehot), batch_size)]
 
     return train_set
@@ -85,7 +86,10 @@ def generate(rnn, batched_data):
     h = rnn.initialize_hiddens()
     data = torch.Tensor(unbatched_data)
     outputs, _ = rnn.forward(data, h)
-    return outputs
+    _, max_indices = torch.max(outputs.data, -1)
+    onehot_outputs = [onehot_encode(datapoint, K) for datapoint in max_indices.tolist()]
+
+    return outputs, onehot_outputs
 
 train_set = build_training_set(data, batchsize, K)
 
@@ -93,5 +97,5 @@ rnn = RNN_Class(K = 4, num_qubits = 2, latent_size = 100, batch_size = 20)
 
 train_rnn(train_set, 3, 0.002)
 
-output = generate(rnn, train_set)
-print(output)
+output, output_onehot = generate(rnn, train_set)
+print(output, output_onehot)
