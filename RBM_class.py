@@ -10,7 +10,7 @@ import random
 class RBM(object):
     
     def __init__(self, num_visible_nodes, num_hidden_nodes, num_visible_states, num_hidden_states, 
-                 num_samples, weights, visible_bias, hidden_bias):
+                 num_samples):
         
         self.num_samples=num_samples 
         
@@ -67,40 +67,49 @@ class RBM(object):
 
     '''
     
-    def generate_h_samples(self,v):
+    def generate_h_samples(self,v,nsamples=None):
+        if nsamples == None:
+            nsamples = self.num_samples
+            
         a = torch.matmul(v.float(), self.weights) + torch.t(self.hidden_bias)
-        p = torch.sigmoid(a.view(self.num_samples*self.num_hidden_nodes,self.num_hidden_states))
+        p = torch.sigmoid(a.view(nsamples*self.num_hidden_nodes,self.num_hidden_states))
         sig = torch.distributions.one_hot_categorical.OneHotCategorical(probs=p)
         samples = sig.sample()
-        return samples.view(self.num_samples,self.num_hidden_states*self.num_hidden_nodes)
+        return samples.view(nsamples,self.num_hidden_states*self.num_hidden_nodes)
     
-    def generate_v_samples(self,h):
+    def generate_v_samples(self,h,nsamples=None):
+        if nsamples == None:
+            nsamples = self.num_samples
+            
         a = torch.matmul(h.float(), torch.t(self.weights)) + torch.t(self.visible_bias)
-        p = torch.sigmoid(a.view(self.num_samples*self.num_visible_nodes,self.num_visible_states))
+        p = torch.sigmoid(a.view(nsamples*self.num_visible_nodes,self.num_visible_states))
         sig = torch.distributions.one_hot_categorical.OneHotCategorical(probs=p)
         samples = sig.sample()
-        return samples.view(self.num_samples,self.num_visible_states*self.num_visible_nodes)
+        return samples.view(nsamples,self.num_visible_states*self.num_visible_nodes)
                          
-    def CD_sample(self, num_iterations):
-        v = self.visible_samples
+    def CD_sample(self, num_iterations,samples,nsamples=None):
+        if samples is None:
+            v = self.visible_samples
+        else:
+            v = samples
 
         for i in range(num_iterations):
-            h = self.generate_h_samples(v)
-            v = self.generate_v_samples(h)
+            h = self.generate_h_samples(v,nsamples)
+            v = self.generate_v_samples(h,nsamples)
 
         self.hidden_samples = h
         self.visible_samples = v
 
         return v, h
     def energy(self,v,h):
-        wvh = torch.sum(torch.matmul(v,self.weights))
-        vb = torch.matmul(v,self.visible_bias)
+        wvh = torch.sum(torch.matmul(v.float(),self.weights))
+        vb = torch.matmul(v.float(),self.visible_bias)
         hb = torch.matmul(h,self.hidden_bias)
-        return -wvbh - torch.t(vb) - torch.t(hb) 
+        return -wvh - torch.t(vb) - torch.t(hb) 
                                     
-    def update_weights(self, data_visible, num_gibbs=2,lr=1e-3):
-        data_hidden = self.sample_h_given(data_visible)
+    def update_weights(self, data_visible, num_gibbs=2,lr=1e-3,samples=None):
+        data_hidden = self.generate_h_samples(data_visible)
         data_mean = torch.mean(self.energy(data_visible, data_hidden))
-        model_visible, model_hidden = self.CD_sample(num_gibbs)
-        model_mean = torch.mean(self.energy(model_hidden, model_visible))
-        self.weights += lr*(data_mean-data_model)
+        model_visible, model_hidden = self.CD_sample(num_gibbs,samples)
+        model_mean = torch.mean(self.energy(model_visible,model_hidden))
+        self.weights += lr*(data_mean-model_mean)
