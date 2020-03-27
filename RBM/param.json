@@ -1,0 +1,11 @@
+{
+	"q": 3,
+	"num_visible_states": 4,
+	"num_hidden_states": 2,
+	"num_hidden_nodes": 8,
+	"num_train": 30000,
+	"lr": 1e-3,
+	"batch_size": 100,
+	"num_gibbs": 2,
+	"file_name": "data/3_qubit_train.txt"
+}
