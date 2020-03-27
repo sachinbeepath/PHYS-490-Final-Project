@@ -1,0 +1,10 @@
+{
+  "q": 2,
+  "K": 4,
+  "latent_size": 100,
+  "batch_size": 20,
+  "data": "/Users/yilda/Documents/PHYS490/PHYS-490-Final-Project/Data/{} Qubit/data.txt",
+  "lr": 0.01,
+  "epochs": 50,
+  "project_dir": "/Users/yilda/Documents/PHYS490/PHYS-490-Final-Project/RNN"
+}
