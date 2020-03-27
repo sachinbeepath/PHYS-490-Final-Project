@@ -20,10 +20,10 @@ batch_size = params['batch_size']
 data = params['data'].format(num_qubits)
 epochs = params['epochs']
 lr = params['lr']
-out_dir = params['project_dir'] + "/outputs/" + "/{}_qubits".format(num_qubits)
+out_dir = "outputs/{}_qubits".format(num_qubits)
 
 try:
-    os.mkdir(params['project_dir'] + "/outputs/")
+    os.mkdir("outputs")
 except:
     "exists"
 
@@ -43,7 +43,7 @@ def onehot_encode(l, K):
     return onehot
 
 def build_training_set(data_path, batch_size, K):
-    dataset = np.loadtxt(data_path)[0:100] # limit to 100 for testing
+    dataset = np.loadtxt(data_path) # limit to 100 for testing
     dataset_onehot = [onehot_encode(datapoint, K) for datapoint in dataset]
     train_set = [dataset_onehot[i:i + batch_size] for i in range(0, len(dataset_onehot), batch_size)]
 
