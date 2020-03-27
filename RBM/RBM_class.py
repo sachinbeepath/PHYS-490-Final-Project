@@ -7,10 +7,11 @@ import numpy as np
 import random
 
 
-class RBM(object):
+class RBM(nn.Module):
     
     def __init__(self, num_visible_nodes, num_hidden_nodes, num_visible_states, num_hidden_states, 
                  num_samples):
+        super(RBM, self).__init__()
         
         self.num_samples=num_samples 
         
@@ -20,14 +21,14 @@ class RBM(object):
         self.num_hidden_states = num_hidden_states # number of states of the hidden units
 
         #visible bias:
-        self.visible_bias = torch.zeros(self.num_visible_nodes*self.num_visible_states, 1)
+        self.visible_bias = nn.Parameter(torch.zeros(self.num_visible_nodes*self.num_visible_states, 1))
 
         #hidden bias:
-        self.hidden_bias = torch.zeros(self.num_hidden_nodes*self.num_hidden_states, 1)
+        self.hidden_bias = nn.Parameter(torch.zeros(self.num_hidden_nodes*self.num_hidden_states, 1))
 
         #weights:
-        self.weights = torch.normal(0, 0.05, size=(self.num_visible_nodes*self.num_visible_states, 
-                                                   self.num_hidden_nodes*self.num_hidden_states))
+        self.weights = nn.Parameter(torch.normal(0, 0.05, size=(self.num_visible_nodes*self.num_visible_states, 
+                                                   self.num_hidden_nodes*self.num_hidden_states)))
         
 
         # randomly initialize visible units for sampling
@@ -45,27 +46,10 @@ class RBM(object):
         h_one_hot[np.arange(h.size),h] = 1
         
         self.hidden_samples = torch.from_numpy(np.reshape(h_one_hot,(self.num_samples,self.num_hidden_states*self.num_hidden_nodes)))
-
         
 
     ### Generate hidden samples given visible samples
-    
-    ### old sampling
-    '''
-    def generate_h_samples(v):
-        pv = torch.matmul(v.float(), self.weights) + torch.t(self.hidden_bias)
-        v_r = pv.view(self.num_samples*self.num_hidden_nodes,self.num_hidden_states)
-        sig = torch.distributions.multinomial.Multinomial(1,logits=v_r)
-        return torch.reshape(sig.sample(),(self.num_samples,self.num_hidden_states*self.num_hidden_nodes))  
 
-    ### Generate visible samples given hidden samples
-    def sample_v_given(self, h):
-        ph = torch.matmul(h.float(), torch.t(self.weights)) + torch.t(self.visible_bias)
-        h_r = ph.view(self.num_samples*self.num_visible_nodes,self.num_visible_states)
-        sig = torch.distributions.multinomial.Multinomial(1,logits=h_r)
-        return torch.reshape(sig.sample(),(self.num_samples,self.num_visible_states*self.num_visible_nodes))  
-
-    '''
     
     def generate_h_samples(self,v,nsamples=None):
         if nsamples == None:
@@ -102,14 +86,15 @@ class RBM(object):
 
         return v, h
     def energy(self,v,h):
-        wvh = torch.sum(torch.matmul(v.float(),self.weights))
-        vb = torch.matmul(v.float(),self.visible_bias)
-        hb = torch.matmul(h,self.hidden_bias)
-        return -wvh - torch.t(vb) - torch.t(hb) 
+        wvh = torch.sum(torch.matmul(v.float(),self.weights) * h,axis=1)
+        vb = torch.t(torch.matmul(v.float(),self.visible_bias))[0]
+        hb = torch.t(torch.matmul(h,self.hidden_bias))[0]
+        return -wvh - vb - hb      
                                     
     def update_weights(self, data_visible, num_gibbs=2,lr=1e-3,samples=None):
         data_hidden = self.generate_h_samples(data_visible)
         data_mean = torch.mean(self.energy(data_visible, data_hidden))
         model_visible, model_hidden = self.CD_sample(num_gibbs,samples)
         model_mean = torch.mean(self.energy(model_visible,model_hidden))
-        self.weights += lr*(data_mean-model_mean)
+        #self.weights += lr*(data_mean-model_mean)
+        return data_mean-model_mean
