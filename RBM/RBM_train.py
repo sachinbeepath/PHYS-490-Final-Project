@@ -46,7 +46,7 @@ def save_parameters(rbm,epoch):
     parameter_dir = 'RBM_parameters'
     if not(os.path.isdir(parameter_dir)):
         os.mkdir(parameter_dir)
-    parameter_file_path = '{}/parameters_nH{}_L{}_p{}_epoch{}'.format(parameter_dir,num_hidden_nodes,q,str(p),str(epoch))
+    parameter_file_path = '{}/parameters_nH{}_q{}_p{}_epoch{}'.format(parameter_dir,num_hidden_nodes,q,str(p),str(epoch))
     np.savez_compressed(parameter_file_path, weights=weights.detach(), visible_bias=visible_bias.detach(), hidden_bias=hidden_bias.detach())
 
 # Input parameters:
