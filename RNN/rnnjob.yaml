@@ -1,0 +1,13 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: rnn_job
+spec:
+  template:
+    spec:
+      containers:
+        - name: job
+          image: busybox
+          args:
+            - python3 rnn_class.py
+      restartPolicy: Never

@@ -14,23 +14,22 @@ with open('param.json') as file:
     params = json.load(file)
 
 K = params['K']
-num_qubits = params['q']
+#num_qubits = params['q']
 latent_size = params['latent_size']
 batch_size = params['batch_size']
-data = params['data'].format(num_qubits)
+#data = params['data'].format(num_qubits)
 epochs = params['epochs']
-lr = params['lr']
-out_dir = "outputs/{}_qubits".format(num_qubits)
+#lr = params['lr']
 
-try:
-    os.mkdir("outputs")
-except:
-    "exists"
-
-try:
-    os.mkdir(out_dir)
-except:
-    "exists"
+# try:
+#     os.mkdir("outputs")
+# except:
+#     "exists"
+#
+# try:
+#     os.mkdir(out_dir)
+# except:
+#     "exists"
 
 
 def onehot_encode(l, K):
@@ -90,9 +89,16 @@ def generate(rnn, batched_data):
 
     return unbatched_data, outputs, onehot
 
-def train_rnn(rnn, train_data, epochs, learning_rate):
+def train_rnn(rnn, train_data, epochs, learning_rate, out_dir):
 
     kl_loss = []
+
+    directory = out_dir + "/lr_{}".format(learning_rate)
+
+    try:
+        os.mkdir(directory)
+    except:
+        "exists"
 
     optimizer = torch.optim.Adam(rnn.parameters(), learning_rate)
     criterion = nn.KLDivLoss(size_average=False) #input this for now, may change
@@ -110,23 +116,52 @@ def train_rnn(rnn, train_data, epochs, learning_rate):
             loss.backward(retain_graph=True)
             optimizer.step()
             total_loss.append(loss.item())
+            print("Epoch {}, Batch {}".format(epoch, i))
 
         unbatched_data, generated_probs, generated_data = generate(rnn, train_data)
         kl_div = criterion(torch.Tensor(generated_probs).log(), torch.Tensor(unbatched_data))
         kl_loss.append(kl_div)
         print("Epoch {} complete, KL loss = {}".format(epoch, kl_div))
 
-        output_path = out_dir + "/epoch_{}.txt".format(epoch)
+        output_path = directory + "/epoch_{}.txt".format(epoch)
 
         np.savetxt(output_path, generated_data, fmt='%1.0f')
 
+    np.savetxt(directory + "/kl.txt", kl_loss)
+
     return kl_loss
 
-train_set = build_training_set(data, batch_size, K)
+lrate = [0.01, 0.001, 0.0001]
 
-rnn = RNN_Class(K, num_qubits, latent_size, batch_size)
+qubits = [2, 3, 4, 5]
 
-kl_loss = train_rnn(rnn, train_set, epochs, lr)
+for lr in lrate:
+    for q in qubits:
 
-plt.plot(kl_loss)
-plt.savefig(out_dir + "/KL_div.pdf")
+        try:
+            os.mkdir("outputs")
+        except:
+            "exists"
+
+        out_dir = "outputs/{}_qubits".format(q)
+
+        try:
+            os.mkdir(out_dir)
+        except:
+            "exists"
+
+        data = params['data'].format(q)
+
+        train_set = build_training_set(data, batch_size, K)
+
+        rnn = RNN_Class(K, q, latent_size, batch_size)
+
+        kl_loss = train_rnn(rnn, train_set, epochs, lr, out_dir)
+
+        plt.plot(kl_loss)
+
+        directory = out_dir + "/lr_{}".format(lr)
+
+        plt.savefig(directory + "/KL_div.pdf")
+
+        plt.close()
