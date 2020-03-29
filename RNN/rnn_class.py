@@ -3,12 +3,22 @@ import torch.nn as nn
 import numpy as np
 import pandas as pd
 import json
+import gc
 from sklearn.preprocessing import OneHotEncoder
 import matplotlib
 matplotlib.use('PS')
 import matplotlib.pyplot as plt
 import os
+import argparse
+import scipy
+import torch.nn.functional as F
 
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-q', help="qubits")
+parser.add_argument('-lr', help="learning rate")
+
+args = parser.parse_args()
 
 with open('param.json') as file:
     params = json.load(file)
@@ -31,6 +41,46 @@ epochs = params['epochs']
 # except:
 #     "exists"
 
+def get_unique(data):
+    if not isinstance(data, list):
+        data_list = data.tolist()
+    else:
+        data_list = data
+    dres = []
+    for i in data_list:
+        if i not in dres:
+            dres.append(i)
+    return dres
+
+def get_freq(data,dres):
+    if not isinstance(data, list):
+        data_list = data.tolist()
+    else:
+        data_list = data
+    prob = []
+    for i in dres:
+        p = data_list.count(i)/len(data_list)
+        if p == 0:
+            prob.append(1e-8)
+        else:
+            prob.append(p)
+    print(prob)
+    return prob
+
+def kl(data,model_data):
+    unbatched_data = []
+    unbatched_model_data = []
+    for batch in data:
+        for item in batch:
+            unbatched_data.append(item)
+    for batch in model_data:
+        for item in batch:
+            unbatched_model_data.append(item)
+    dres = get_unique(data)
+    prob = get_freq(data,dres)
+    mp = get_freq(model_data,dres)
+    kl_div = np.sum([prob[i] * np.log(prob[i]/mp[i]) for i in range(len(prob))])
+    return kl_div
 
 def onehot_encode(l, K):
     onehot = []
@@ -79,19 +129,19 @@ def generate(rnn, batched_data):
     for batch in batched_data:
         for item in batch:
             unbatched_data.append(item)
-    h = rnn.initialize_hiddens()
+    h = rnn.initialize_hiddens().data
     data = torch.Tensor(unbatched_data)
-    outputs, _ = rnn.forward(data, h)
+    outputs, _ = rnn(data, h)
     _, max_indices = torch.max(outputs.data, -1)
     onehot_outputs = [onehot_encode(datapoint, K) for datapoint in max_indices.tolist()]
 
     onehot = [data[0] + data[1] for data in onehot_outputs]
 
+    gc.collect()
+
     return unbatched_data, outputs, onehot
 
 def train_rnn(rnn, train_data, epochs, learning_rate, out_dir):
-
-    kl_loss = []
 
     directory = out_dir + "/lr_{}".format(learning_rate)
 
@@ -107,61 +157,44 @@ def train_rnn(rnn, train_data, epochs, learning_rate, out_dir):
     print("Training Starts")
     for epoch in range(1, epochs+1):
         h = rnn.initialize_hiddens().data
-        total_loss = []
         for i, batch in enumerate(train_data):
             rnn.zero_grad()
             batch = torch.Tensor(batch)
-            generated_output, h = rnn(batch, h)
+            generated_output, h = rnn(batch, h.detach())
             loss = criterion(generated_output.log(), batch)
             loss.backward(retain_graph=True)
             optimizer.step()
-            total_loss.append(loss.item())
             print("Epoch {}, Batch {}".format(epoch, i))
 
         unbatched_data, generated_probs, generated_data = generate(rnn, train_data)
-        kl_div = criterion(torch.Tensor(generated_probs).log(), torch.Tensor(unbatched_data))
-        kl_loss.append(kl_div)
-        print("Epoch {} complete, KL loss = {}".format(epoch, kl_div))
+
+        print("Epoch {} complete".format(epoch))
 
         output_path = directory + "/epoch_{}.txt".format(epoch)
 
-        np.savetxt(output_path, generated_data, fmt='%1.0f')
+        np.savez_compressed(output_path, generated_data)
 
-    np.savetxt(directory + "/kl.txt", kl_loss)
+        gc.collect()
 
-    return kl_loss
+lr = float(args.lr)
+q = int(args.q)
 
-lrate = [0.01, 0.001, 0.0001]
+try:
+    os.mkdir("outputs")
+except:
+    "exists"
 
-qubits = [2, 3, 4, 5]
+out_dir = "outputs/{}_qubits".format(q)
 
-for lr in lrate:
-    for q in qubits:
+try:
+    os.mkdir(out_dir)
+except:
+    "exists"
 
-        try:
-            os.mkdir("outputs")
-        except:
-            "exists"
+data = params['data'].format(q)
 
-        out_dir = "outputs/{}_qubits".format(q)
+train_set = build_training_set(data, batch_size, K)
 
-        try:
-            os.mkdir(out_dir)
-        except:
-            "exists"
+rnn = RNN_Class(K, q, latent_size, batch_size)
 
-        data = params['data'].format(q)
-
-        train_set = build_training_set(data, batch_size, K)
-
-        rnn = RNN_Class(K, q, latent_size, batch_size)
-
-        kl_loss = train_rnn(rnn, train_set, epochs, lr, out_dir)
-
-        plt.plot(kl_loss)
-
-        directory = out_dir + "/lr_{}".format(lr)
-
-        plt.savefig(directory + "/KL_div.pdf")
-
-        plt.close()
+train_rnn(rnn, train_set, epochs, lr, out_dir)

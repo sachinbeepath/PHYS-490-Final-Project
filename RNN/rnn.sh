@@ -1,0 +1,15 @@
+python rnn_class.py -q 6 -lr 0.01
+python rnn_class.py -q 5 -lr 0.01
+python rnn_class.py -q 4 -lr 0.01
+python rnn_class.py -q 3 -lr 0.01
+python rnn_class.py -q 2 -lr 0.01
+python rnn_class.py -q 6 -lr 0.001
+python rnn_class.py -q 5 -lr 0.001
+python rnn_class.py -q 4 -lr 0.001
+python rnn_class.py -q 3 -lr 0.001
+python rnn_class.py -q 2 -lr 0.001
+python rnn_class.py -q 6 -lr 0.0001
+python rnn_class.py -q 5 -lr 0.0001
+python rnn_class.py -q 4 -lr 0.0001
+python rnn_class.py -q 3 -lr 0.0001
+python rnn_class.py -q 2 -lr 0.0001
