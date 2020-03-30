@@ -17,7 +17,7 @@ import torch.nn.functional as F
 parser = argparse.ArgumentParser()
 parser.add_argument('-q', help="qubits")
 parser.add_argument('-lr', help="learning rate")
-
+parser.add_argment('-s', help="max training size in int])
 args = parser.parse_args()
 
 with open('param.json') as file:
@@ -30,6 +30,8 @@ batch_size = params['batch_size']
 #data = params['data'].format(num_qubits)
 epochs = params['epochs']
 #lr = params['lr']
+max_size = int(args.s)
+                  
 
 # try:
 #     os.mkdir("outputs")
@@ -51,7 +53,7 @@ def onehot_encode(l, K):
     return onehot
 
 def build_training_set(data_path, batch_size, K):
-    dataset = np.loadtxt(data_path) # limit to 100 for testing
+    dataset = np.loadtxt(data_path)[0:max_size] # limit to 100 for testing
     dataset_onehot = [onehot_encode(datapoint, K) for datapoint in dataset]
     train_set = [dataset_onehot[i:i + batch_size] for i in range(0, len(dataset_onehot), batch_size)]
 
