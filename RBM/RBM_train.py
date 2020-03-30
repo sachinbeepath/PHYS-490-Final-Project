@@ -113,6 +113,9 @@ for i in range(1,num_train+1):
         print ('Epoch =',epoch)
         save_parameters(model,epoch)
 
-plt.plot(kl_div)
+plt.plot(list(range(1,len(kl_div)+1)),kl_div)
+plt.grid()
+plt.xlabel("Epoch")
+plt.ylabel("KL Divergence")
 plt.savefig(out_dir + '/KL_div.pdf')
 plt.close()
