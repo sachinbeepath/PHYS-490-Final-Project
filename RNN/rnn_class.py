@@ -135,11 +135,19 @@ def generate(rnn, batched_data):
     _, max_indices = torch.max(outputs.data, -1)
     onehot_outputs = [onehot_encode(datapoint, K) for datapoint in max_indices.tolist()]
 
-    onehot = [data[0] + data[1] for data in onehot_outputs]
+
+    unbatched_outputs = []
+    for batch in outputs.tolist():
+        for item in batch:
+            unbatched_outputs.append(item)
+
+    onehot = []
+    for inner_list in onehot_outputs:
+         onehot.append([item for sublist in inner_list for item in sublist])
 
     gc.collect()
 
-    return unbatched_data, outputs, onehot
+    return unbatched_data, unbatched_outputs, onehot
 
 def train_rnn(rnn, train_data, epochs, learning_rate, out_dir):
 
@@ -172,7 +180,15 @@ def train_rnn(rnn, train_data, epochs, learning_rate, out_dir):
 
         output_path = directory + "/epoch_{}.txt".format(epoch)
 
-        np.savez_compressed(output_path, generated_data)
+        np.savetxt(output_path, generated_data, fmt='%1.0f')
+
+        output_path_probs = directory + "/epoch_probs_{}.txt".format(epoch)
+
+        onehot_probs = []
+        for i in range(0, len(generated_probs), 4):
+            onehot_probs.append([item for sublist in generated_probs[i:i + 4] for item in sublist])
+#            onehot_probs.append([item for sublist in inner_list for item in sublist])
+        np.savetxt(output_path_probs, onehot_probs, fmt='%1.4f')
 
         gc.collect()
 
@@ -180,11 +196,11 @@ lr = float(args.lr)
 q = int(args.q)
 
 try:
-    os.mkdir("outputs")
+    os.mkdir("outputs_2")
 except:
     "exists"
 
-out_dir = "outputs/{}_qubits".format(q)
+out_dir = "outputs_2/{}_qubits".format(q)
 
 try:
     os.mkdir(out_dir)
