@@ -17,7 +17,7 @@ import torch.nn.functional as F
 parser = argparse.ArgumentParser()
 parser.add_argument('-q', help="qubits")
 parser.add_argument('-lr', help="learning rate")
-parser.add_argment('-s', help="max training size in int])
+parser.add_argment('-s', help="max training size in int")
 args = parser.parse_args()
 
 with open('param.json') as file:
