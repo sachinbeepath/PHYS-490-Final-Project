@@ -31,7 +31,7 @@ batch_size = params['batch_size']
 epochs = params['epochs']
 #lr = params['lr']
 max_size = int(args.s)
-                  
+
 
 # try:
 #     os.mkdir("outputs")
@@ -112,12 +112,20 @@ def generate(rnn, batched_data):
 
 def train_rnn(rnn, train_data, epochs, learning_rate, out_dir):
 
-    directory = out_dir + "/lr_{}".format(learning_rate)
+    directory = out_dir + "/lr_{}/".format(learning_rate)
 
     try:
         os.mkdir(directory)
     except:
         "exists"
+
+    directory = directory + "/max_size_{}/".format(max_size)
+
+    try:
+        os.mkdir(directory)
+    except:
+        "exists"
+
 
     optimizer = torch.optim.Adam(rnn.parameters(), learning_rate)
     criterion = nn.KLDivLoss(size_average=False) #input this for now, may change
