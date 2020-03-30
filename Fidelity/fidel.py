@@ -48,12 +48,13 @@ def fid(data = 'C:\\Users\\antch\\Downloads\\PHYS-490-Final-Project-master\\RBM\
     return fidelity
     
 epochs = 50
-Nq = 2
-model = 'RNN'
+Nq = 6
+model = 'RBM'
 
 if model == 'RBM':
+    hn = 100
     data = 'C:\\Users\\antch\\Downloads\\PHYS-490-Final-Project-master\\RBM\\data\\{0}_qubit_train.txt'.format(Nq)
-    direct = 'C:\\Users\\antch\\Downloads\\PHYS-490-Final-Project-master\\RBM\\output\\{0}_qubit\\'.format(Nq)
+    direct = 'C:\\Users\\antch\\Downloads\\PHYS-490-Final-Project-master\\RBM\\output\\Hn{0}\\{1}_qubit\\'.format(hn,Nq)
     
 elif model == 'RNN':
     data = 'C:\\Users\\antch\\Downloads\\PHYS-490-Final-Project-master\\RNN\\Data\\{0} Qubit\\train.txt'.format(Nq)
