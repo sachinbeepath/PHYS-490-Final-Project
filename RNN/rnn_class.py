@@ -41,47 +41,6 @@ epochs = params['epochs']
 # except:
 #     "exists"
 
-def get_unique(data):
-    if not isinstance(data, list):
-        data_list = data.tolist()
-    else:
-        data_list = data
-    dres = []
-    for i in data_list:
-        if i not in dres:
-            dres.append(i)
-    return dres
-
-def get_freq(data,dres):
-    if not isinstance(data, list):
-        data_list = data.tolist()
-    else:
-        data_list = data
-    prob = []
-    for i in dres:
-        p = data_list.count(i)/len(data_list)
-        if p == 0:
-            prob.append(1e-8)
-        else:
-            prob.append(p)
-    print(prob)
-    return prob
-
-def kl(data,model_data):
-    unbatched_data = []
-    unbatched_model_data = []
-    for batch in data:
-        for item in batch:
-            unbatched_data.append(item)
-    for batch in model_data:
-        for item in batch:
-            unbatched_model_data.append(item)
-    dres = get_unique(data)
-    prob = get_freq(data,dres)
-    mp = get_freq(model_data,dres)
-    kl_div = np.sum([prob[i] * np.log(prob[i]/mp[i]) for i in range(len(prob))])
-    return kl_div
-
 def onehot_encode(l, K):
     onehot = []
     for i in l:
