@@ -51,8 +51,8 @@ model = 'RBM'
 
 if model == 'RBM':
     Nq = 6
-    epochs = 30
-    hn = 8
+    epochs = 50
+    hn = 100
     data = 'C:\\Users\\antch\\Downloads\\PHYS-490-Final-Project-master\\RBM\\data\\{0}_qubit_train.txt'.format(Nq)
     direct = 'C:\\Users\\antch\\Downloads\\PHYS-490-Final-Project-master\\RBM\\output\\Hn{0}\\{1}_qubit\\'.format(hn,Nq)
     
