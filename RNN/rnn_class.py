@@ -24,24 +24,10 @@ with open('param.json') as file:
     params = json.load(file)
 
 K = params['K']
-#num_qubits = params['q']
 latent_size = params['latent_size']
 batch_size = params['batch_size']
-#data = params['data'].format(num_qubits)
 epochs = params['epochs']
-#lr = params['lr']
 max_size = int(args.s)
-
-
-# try:
-#     os.mkdir("outputs")
-# except:
-#     "exists"
-#
-# try:
-#     os.mkdir(out_dir)
-# except:
-#     "exists"
 
 def onehot_encode(l, K):
     onehot = []
@@ -156,7 +142,6 @@ def train_rnn(rnn, train_data, epochs, learning_rate, out_dir):
         onehot_probs = []
         for i in range(0, len(generated_probs), 4):
             onehot_probs.append([item for sublist in generated_probs[i:i + 4] for item in sublist])
-#            onehot_probs.append([item for sublist in inner_list for item in sublist])
         np.savetxt(output_path_probs, onehot_probs, fmt='%1.4f')
 
         gc.collect()
