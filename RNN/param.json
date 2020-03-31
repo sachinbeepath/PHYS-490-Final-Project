@@ -4,5 +4,4 @@
   "batch_size": 500,
   "data": "Data/{} Qubit/data.txt",
   "epochs": 15,
-  "project_dir": ""
 }
