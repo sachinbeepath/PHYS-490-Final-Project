@@ -32,7 +32,7 @@ kls = []
 epoch = list(range(1,epochs + 1))
 
 for i in epoch:
-    output_path = "/home/apchytro/RNN/outputs_2/{}_qubits/lr_{}/epoch_probs_{}.txt".format(q, lr, i)
+    output_path = "outputs_50epochs/{}_qubits/lr_{}/epoch_probs_{}.txt".format(q, lr, i)
 
     dataset = np.loadtxt(data_path)
 
