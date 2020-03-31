@@ -4,12 +4,8 @@ import numpy as np
 import json
 import gc
 from sklearn.preprocessing import OneHotEncoder
-import matplotlib
-matplotlib.use('PS')
-import matplotlib.pyplot as plt
 import os
 import argparse
-import scipy
 import torch.nn.functional as F
 
 
