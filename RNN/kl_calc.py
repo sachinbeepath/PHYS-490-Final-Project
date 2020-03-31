@@ -5,7 +5,6 @@ import torch
 import argparse
 import matplotlib
 import matplotlib.pyplot as plt
-#data_path = "Data/4 Qubit/train.txt"
 
 epochs = 50
 
@@ -43,8 +42,6 @@ for i in epoch:
             if item == 0:
                 dataset[i][j] = 1e-8
 
-#    dataset_onehot = [onehot_encode(datapoint, 4) for datapoint in dataset]
-
     model_data = np.loadtxt(output_path)
 
     for i, list in enumerate(model_data):
@@ -56,11 +53,7 @@ for i in epoch:
 
     data_tensor = torch.FloatTensor(dataset).reshape(-1, q, 4)
 
-#    print(data_tensor)
-
     kl = F.kl_div(model_tensor.log(), data_tensor) 
-
-#    print("Epoch {}".format(i), kl.item())
 
     kls.append(kl.item())
 
