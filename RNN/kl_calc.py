@@ -1,5 +1,4 @@
 import numpy as np
-from scipy.stats import entropy
 import torch.nn.functional as F
 import torch
 import argparse
