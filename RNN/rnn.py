@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import numpy as np
-import pandas as pd
 import json
 import gc
 from sklearn.preprocessing import OneHotEncoder
