@@ -13,7 +13,7 @@ The number of qubits, learning rate and training data size are defined upon runn
 ```sh
 usage: rnn.py [-h] [-q Q] [-lr LR] [-s S]
 
-optional arguments:
+arguments:
   -h, --help  show this help message and exit
   -q Q        number of qubits
   -lr LR      learning rate
@@ -36,7 +36,7 @@ The number of qubits and learning rate (used to locate the generated data for th
 ```sh
 usage: rnn.py [-h] [-q Q] [-lr LR] [-s S]
 
-optional arguments:
+arguments:
   -h, --help  show this help message and exit
   -q Q        number of qubits
   -lr LR      learning rate
